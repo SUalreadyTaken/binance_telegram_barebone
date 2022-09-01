@@ -1,0 +1,57 @@
+
+<configuration>
+  <conversionRule conversionWord="epoch"
+      converterClass="com.binance.connector.logging.util.MsEpochConverter" />
+
+  <property name="SYSTEM" value="app" />
+  <property name="LOG_PATTERN" value="%date{dd-MM-yyyy HH:mm:ss.SSS}[%epoch] | %-5level | %-10thread{10} | %-36logger{36} - %msg%n" />
+  <property name="BASE_DIR" value="./logs" />
+  <property name="OLD_DIR" value="${SYSTEM}" />
+  <property name="FILE_NAME" value="${SYSTEM}.log" />
+
+
+  <appender name="stdout" class="ch.qos.logback.core.ConsoleAppender">
+      <encoder>
+          <pattern>${LOG_PATTERN}</pattern>
+      </encoder>
+      <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+        <evaluator>
+            <expression>
+            return formattedMessage.contains("klines"); 
+            </expression>
+        </evaluator>
+        <onMatch>DENY</onMatch>
+    </filter>
+  </appender>
+
+  <appender name="dailyFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+      <file>${BASE_DIR}/${FILE_NAME}</file>
+      <append>true</append>
+      <encoder>
+          <pattern>${LOG_PATTERN}</pattern>
+      </encoder>
+      <filter class="ch.qos.logback.core.filter.EvaluatorFilter">
+        <evaluator>
+            <expression>
+            return formattedMessage.contains("klines"); 
+            </expression>
+        </evaluator>
+        <onMatch>DENY</onMatch>
+    </filter>
+      <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+          <fileNamePattern>${BASE_DIR}/${OLD_DIR}/${FILE_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+          <maxHistory>120</maxHistory>
+      </rollingPolicy>
+  </appender>
+
+<appender name="dailyFileAsync" class="ch.qos.logback.classic.AsyncAppender">
+    <queueSize>1000000</queueSize>
+    <discardingThreshold>0</discardingThreshold>
+    <appender-ref ref="dailyFile" />
+</appender>
+
+<root level="INFO">
+    <appender-ref ref="stdout" />
+    <appender-ref ref="dailyFileAsync" />
+</root>
+</configuration>
